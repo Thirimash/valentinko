@@ -1,0 +1,12 @@
+{
+  "name": "valentinko",
+  "version": "1.0.0",
+  "description": "Strona walentynkowa dla Magico",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}
