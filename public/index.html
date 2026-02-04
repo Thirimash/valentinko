@@ -496,25 +496,46 @@
 
             // Pobierz pozycję przycisku "Tak"
             const yesBtnRect = yesBtn.getBoundingClientRect();
-            const containerRect = container.getBoundingClientRect();
+            const btnRect = btn.getBoundingClientRect();
+
+            // Rozmiar viewportu i kontenera
+            const viewportWidth = window.innerWidth;
+            const viewportHeight = window.innerHeight;
+            const btnWidth = btnRect.width;
+            const btnHeight = btnRect.height;
 
             let randomX, randomY;
             let attempts = 0;
             let isSafe = false;
 
-            // Minimalna bezpieczna odległość (200px)
-            const minDistance = 200;
+            // Minimalna bezpieczna odległość (130px na mobile, 200px na desktop)
+            const minDistance = viewportWidth < 600 ? 130 : 200;
 
-            // Próbuj znaleźć bezpieczną pozycję (maksymalnie 20 prób)
-            while (!isSafe && attempts < 20) {
-                const maxMove = 200 + (moveCount * 30);
-                randomX = (Math.random() - 0.5) * maxMove;
-                randomY = (Math.random() - 0.5) * maxMove;
+            // Maksymalny ruch zależny od rozmiaru ekranu
+            const maxMoveX = viewportWidth < 600 ? 120 : 200;
+            const maxMoveY = 100;
+
+            // Próbuj znaleźć bezpieczną pozycję (maksymalnie 30 prób)
+            while (!isSafe && attempts < 30) {
+                const moveFactor = Math.min(moveCount * 15, maxMoveX);
+                randomX = (Math.random() - 0.5) * (maxMoveX + moveFactor);
+                randomY = (Math.random() - 0.5) * (maxMoveY + moveFactor / 2);
 
                 // Oblicz teoretyczną pozycję przycisku "Nie"
-                const noBtnRect = btn.getBoundingClientRect();
-                const newX = noBtnRect.left + randomX;
-                const newY = noBtnRect.top + randomY;
+                const newX = btnRect.left + randomX;
+                const newY = btnRect.top + randomY;
+
+                // Sprawdź czy przycisk nie wychodzi poza ekran
+                const isInBounds =
+                    newX > 20 &&
+                    newX + btnWidth < viewportWidth - 20 &&
+                    newY > 100 &&
+                    newY + btnHeight < viewportHeight - 100;
+
+                if (!isInBounds) {
+                    attempts++;
+                    continue;
+                }
 
                 // Oblicz odległość od przycisku "Tak"
                 const distance = Math.sqrt(
@@ -530,10 +551,11 @@
                 attempts++;
             }
 
-            // Jeśli po 20 próbach nie znaleziono bezpiecznej pozycji, daj maksymalny oddalenie
+            // Jeśli nie znaleziono bezpiecznej pozycji, daj pozycję po przeciwnej stronie
             if (!isSafe) {
-                randomX = (Math.random() > 0.5 ? 1 : -1) * 300;
-                randomY = (Math.random() > 0.5 ? 1 : -1) * 200;
+                const side = Math.random() > 0.5 ? 1 : -1;
+                randomX = side * (viewportWidth < 600 ? 100 : 180);
+                randomY = (Math.random() - 0.5) * 80;
             }
 
             btn.style.transform = `translate(${randomX}px, ${randomY}px) rotate(${Math.random() * 20 - 10}deg)`;
@@ -631,8 +653,11 @@
         window.addEventListener('load', () => {
             const noBtn = document.getElementById('noBtn');
 
-            // Przesuń przycisk "Nie" na start do prawej strony
-            noBtn.style.transform = 'translate(150px, 0px)';
+            // Przesuń przycisk "Nie" na start - mniej na mobile, więcej na desktop
+            const isMobile = window.innerWidth < 600;
+            const initialOffset = isMobile ? 100 : 150;
+
+            noBtn.style.transform = `translate(${initialOffset}px, 0px)`;
 
             let time = 0;
 
@@ -640,7 +665,7 @@
                 if (moveCount === 0) {
                     time += 0.05;
                     const wobble = Math.sin(time) * 3;
-                    noBtn.style.transform = `translate(150px, ${wobble}px) rotate(${wobble * 0.5}deg)`;
+                    noBtn.style.transform = `translate(${initialOffset}px, ${wobble}px) rotate(${wobble * 0.5}deg)`;
                 }
             }, 50);
         });
