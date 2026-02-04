@@ -197,10 +197,11 @@
         .buttons {
             display: flex;
             gap: 2rem;
-            justify-content: center;
+            justify-content: flex-start;
             margin-top: 2.5rem;
             position: relative;
             min-height: 70px;
+            padding-left: 1rem;
             animation: title-appear 0.8s ease-out;
             animation-delay: 0.7s;
             animation-fill-mode: backwards;
@@ -508,29 +509,32 @@
             let attempts = 0;
             let isSafe = false;
 
-            // Minimalna bezpieczna odległość (130px na mobile, 200px na desktop)
-            const minDistance = viewportWidth < 600 ? 130 : 200;
+            // Minimalna bezpieczna odległość (100px na mobile, 180px na desktop)
+            const minDistance = viewportWidth < 600 ? 100 : 180;
 
-            // Maksymalny ruch zależny od rozmiaru ekranu
-            const maxMoveX = viewportWidth < 600 ? 120 : 200;
-            const maxMoveY = 100;
+            // Maksymalny ruch zależny od rozmiaru ekranu - więcej w pionie na mobile
+            const maxMoveX = viewportWidth < 600 ? 140 : 220;
+            const maxMoveY = viewportWidth < 600 ? 180 : 120;
 
             // Próbuj znaleźć bezpieczną pozycję (maksymalnie 30 prób)
             while (!isSafe && attempts < 30) {
-                const moveFactor = Math.min(moveCount * 15, maxMoveX);
+                const moveFactor = Math.min(moveCount * 25, maxMoveX);
                 randomX = (Math.random() - 0.5) * (maxMoveX + moveFactor);
-                randomY = (Math.random() - 0.5) * (maxMoveY + moveFactor / 2);
+                randomY = (Math.random() - 0.5) * (maxMoveY + moveFactor);
 
                 // Oblicz teoretyczną pozycję przycisku "Nie"
                 const newX = btnRect.left + randomX;
                 const newY = btnRect.top + randomY;
 
-                // Sprawdź czy przycisk nie wychodzi poza ekran
+                // Sprawdź czy przycisk nie wychodzi poza ekran - więcej miejsca w pionie
+                const marginTop = viewportWidth < 600 ? 80 : 100;
+                const marginBottom = viewportWidth < 600 ? 80 : 100;
+
                 const isInBounds =
-                    newX > 20 &&
-                    newX + btnWidth < viewportWidth - 20 &&
-                    newY > 100 &&
-                    newY + btnHeight < viewportHeight - 100;
+                    newX > 10 &&
+                    newX + btnWidth < viewportWidth - 10 &&
+                    newY > marginTop &&
+                    newY + btnHeight < viewportHeight - marginBottom;
 
                 if (!isInBounds) {
                     attempts++;
@@ -554,8 +558,8 @@
             // Jeśli nie znaleziono bezpiecznej pozycji, daj pozycję po przeciwnej stronie
             if (!isSafe) {
                 const side = Math.random() > 0.5 ? 1 : -1;
-                randomX = side * (viewportWidth < 600 ? 100 : 180);
-                randomY = (Math.random() - 0.5) * 80;
+                randomX = side * (viewportWidth < 600 ? 130 : 200);
+                randomY = (Math.random() - 0.5) * (viewportWidth < 600 ? 160 : 100);
             }
 
             btn.style.transform = `translate(${randomX}px, ${randomY}px) rotate(${Math.random() * 20 - 10}deg)`;
@@ -653,11 +657,12 @@
         window.addEventListener('load', () => {
             const noBtn = document.getElementById('noBtn');
 
-            // Przesuń przycisk "Nie" na start - mniej na mobile, więcej na desktop
+            // Przesuń przycisk "Nie" na start - na mobile daj w dół i w prawo
             const isMobile = window.innerWidth < 600;
-            const initialOffset = isMobile ? 100 : 150;
+            const initialOffsetX = isMobile ? 80 : 150;
+            const initialOffsetY = isMobile ? 60 : 0;
 
-            noBtn.style.transform = `translate(${initialOffset}px, 0px)`;
+            noBtn.style.transform = `translate(${initialOffsetX}px, ${initialOffsetY}px)`;
 
             let time = 0;
 
@@ -665,7 +670,7 @@
                 if (moveCount === 0) {
                     time += 0.05;
                     const wobble = Math.sin(time) * 3;
-                    noBtn.style.transform = `translate(${initialOffset}px, ${wobble}px) rotate(${wobble * 0.5}deg)`;
+                    noBtn.style.transform = `translate(${initialOffsetX}px, ${initialOffsetY + wobble}px) rotate(${wobble * 0.5}deg)`;
                 }
             }, 50);
         });
