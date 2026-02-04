@@ -60,3 +60,4 @@ Możesz edytować `public/index.html`:
 - Zmień kolory w sekcji `background: linear-gradient(...)`
 - Zmień tekst w `<h1>` i `.message`
 - Dodaj więcej emoji w funkcji `createHearts()`
+
